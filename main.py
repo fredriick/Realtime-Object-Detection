@@ -2,6 +2,7 @@ import cv2
 import torch
 from pathlib import Path
 import time
+from collections import defaultdict
 
 # Load YOLOv5
 model = torch.hub.load('ultralytics/yolov5', 'yolov5n', pretrained=True)
@@ -14,6 +15,12 @@ model.to(device).eval()
 # Define the window size
 window_width = 900
 window_height = 700
+
+# Object class names
+class_names = model.names
+
+# Object counting dictionary
+object_counts = defaultdict(int)
 
 # Initialize FPS calculation
 prev_time = 0
@@ -39,6 +46,15 @@ def detect_objects():
                 xmin, ymin, xmax, ymax, conf, cls = det.cpu().numpy()
                 cv2.rectangle(frame, (int(xmin), int(ymin)), (int(xmax), int(ymax)), (255, 0, 0), 2)
                 cv2.putText(frame, f'{model.names[int(cls)]}: {conf:.2f}', (int(xmin), int(ymin)-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+
+                # Update object counts
+                object_counts[class_names[int(cls)]] += 1
+
+        # Display object counts
+        count_text = ', '.join([f'{name}: {count}' for name, count in object_counts.items()])
+        cv2.putText(frame, count_text, (30, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 0, 0), 2)
+        
+        cv2.imshow('Real-time Object Detection', frame)    
         
         # Calculate FPS
         current_time = time.time()
