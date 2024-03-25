@@ -4,6 +4,7 @@ from pathlib import Path
 import time
 from collections import defaultdict
 import numpy as np
+from datetime import datetime
 
 # Load YOLOv5
 model = torch.hub.load('ultralytics/yolov5', 'yolov5n', pretrained=True)
@@ -27,13 +28,18 @@ object_counts = defaultdict(int)
 colors = np.random.uniform(0, 255, size=(len(class_names), 3))
 
 # Confidence threshold
-confidence_threshold = 0.10
+confidence_threshold = 0.5
+
+# Recording variables
+is_recording = False
+video_writer = None
 
 # Initialize FPS calculation
 prev_time = 0
 
 # Define a function for real-time object detection
 def detect_objects():
+    global is_recording, video_writer
     global prev_time  # Declare prev_time as global
     
     cap = cv2.VideoCapture(0)  # Use the webcam
@@ -63,6 +69,16 @@ def detect_objects():
         count_text = ', '.join([f'{name}: {count}' for name, count in object_counts.items()])
         cv2.putText(frame, count_text, (30, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 0, 0), 2)
         
+        # Start or stop recording
+        if is_recording:
+            if video_writer is None:
+                fourcc = cv2.VideoWriter_fourcc(*'XVID')
+                video_writer = cv2.VideoWriter(f'recorded_{datetime.now().strftime("%Y%m%d_%H%M%S")}.avi', fourcc, 20.0, (frame.shape[1], frame.shape[0]))
+            video_writer.write(frame)
+        elif video_writer is not None:
+            video_writer.release()
+            video_writer = None
+
         cv2.imshow('Real-time Object Detection', frame)    
         
         # Calculate FPS
@@ -75,8 +91,11 @@ def detect_objects():
         
         cv2.imshow('Real-time Object Detection', frame)
         
+        key = cv2.waitKey(1)
         if cv2.waitKey(1) == 27:  # ESC key to exit
             break
+        elif key == ord('r'):  # Start/stop recording on 'r' key
+            is_recording = not is_recording
 
     cap.release()
     cv2.destroyAllWindows()
