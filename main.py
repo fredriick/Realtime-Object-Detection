@@ -9,6 +9,10 @@ model = torch.hub.load('ultralytics/yolov5', 'yolov5n', pretrained=True)
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 model.to(device).eval()
 
+# Define the window size
+window_width = 900
+window_height =700
+
 # Define a function for real-time object detection
 def detect_objects():
     cap = cv2.VideoCapture(0)  # Use the webcam
@@ -17,6 +21,9 @@ def detect_objects():
         if not ret:
             break
         
+        # Resize the frame
+        frame = cv2.resize(frame, (window_width, window_height))
+
         # Perform inference
         results = model(frame, size=640)
         for _, pred in enumerate(results.pred):
