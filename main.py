@@ -26,6 +26,9 @@ object_counts = defaultdict(int)
 # Define colors for bounding boxes
 colors = np.random.uniform(0, 255, size=(len(class_names), 3))
 
+# Confidence threshold
+confidence_threshold = 0.10
+
 # Initialize FPS calculation
 prev_time = 0
 
@@ -48,12 +51,13 @@ def detect_objects():
             # Draw bounding boxes
             for det in pred:
                 xmin, ymin, xmax, ymax, conf, cls = det.cpu().numpy()
-                color = colors[int(cls)]
-                cv2.rectangle(frame, (int(xmin), int(ymin)), (int(xmax), int(ymax)), color, 2)
-                cv2.putText(frame, f'{model.names[int(cls)]}: {conf:.2f}', (int(xmin), int(ymin)-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+                if conf > confidence_threshold:
+                    color = colors[int(cls)]
+                    cv2.rectangle(frame, (int(xmin), int(ymin)), (int(xmax), int(ymax)), color, 2)
+                    cv2.putText(frame, f'{model.names[int(cls)]}: {conf:.2f}', (int(xmin), int(ymin)-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
-                # Update object counts
-                object_counts[class_names[int(cls)]] += 1
+                    # Update object counts
+                    object_counts[class_names[int(cls)]] += 1
 
         # Display object counts
         count_text = ', '.join([f'{name}: {count}' for name, count in object_counts.items()])
