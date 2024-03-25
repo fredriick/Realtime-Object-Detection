@@ -3,6 +3,7 @@ import torch
 from pathlib import Path
 import time
 from collections import defaultdict
+import numpy as np
 
 # Load YOLOv5
 model = torch.hub.load('ultralytics/yolov5', 'yolov5n', pretrained=True)
@@ -21,6 +22,9 @@ class_names = model.names
 
 # Object counting dictionary
 object_counts = defaultdict(int)
+
+# Define colors for bounding boxes
+colors = np.random.uniform(0, 255, size=(len(class_names), 3))
 
 # Initialize FPS calculation
 prev_time = 0
@@ -44,8 +48,9 @@ def detect_objects():
             # Draw bounding boxes
             for det in pred:
                 xmin, ymin, xmax, ymax, conf, cls = det.cpu().numpy()
-                cv2.rectangle(frame, (int(xmin), int(ymin)), (int(xmax), int(ymax)), (255, 0, 0), 2)
-                cv2.putText(frame, f'{model.names[int(cls)]}: {conf:.2f}', (int(xmin), int(ymin)-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+                color = colors[int(cls)]
+                cv2.rectangle(frame, (int(xmin), int(ymin)), (int(xmax), int(ymax)), color, 2)
+                cv2.putText(frame, f'{model.names[int(cls)]}: {conf:.2f}', (int(xmin), int(ymin)-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
                 # Update object counts
                 object_counts[class_names[int(cls)]] += 1
