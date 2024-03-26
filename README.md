@@ -30,6 +30,7 @@ The webcam feed will be displayed, and objects will be detected and tracked in r
 
 Real-time object detection using YOLOv5.
 Display of bounding boxes and labels for detected objects.
+Object Tracking: Tracks detected objects over consecutive frames using Kalman filters to predict and update their positions.
 
 ## Configuration
 window_width and window_height variables can be adjusted to change the size of the display window.
@@ -39,5 +40,6 @@ confidence_threshold variable can be adjusted to change the confidence threshold
 ```
 
 YOLOv5: repository https://github.com/ultralytics/yolov5
+KalmanFilter: https://filterpy.readthedocs.io/en/latest/kalman/KalmanFilter.html
 
 ```
