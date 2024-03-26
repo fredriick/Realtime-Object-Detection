@@ -5,6 +5,9 @@ import time
 from collections import defaultdict
 import numpy as np
 from datetime import datetime
+from filterpy.kalman import KalmanFilter
+from filterpy.common import Q_discrete_white_noise
+
 
 # Load YOLOv5
 model = torch.hub.load('ultralytics/yolov5', 'yolov5n', pretrained=True)
@@ -37,6 +40,9 @@ video_writer = None
 # Initialize FPS calculation
 prev_time = 0
 
+# Initialize Kalman filter for each object
+kalman_filters = {}
+
 # Define a function for real-time object detection
 def detect_objects():
     global is_recording, video_writer
@@ -58,12 +64,46 @@ def detect_objects():
             for det in pred:
                 xmin, ymin, xmax, ymax, conf, cls = det.cpu().numpy()
                 if conf > confidence_threshold:
-                    color = colors[int(cls)]
-                    cv2.rectangle(frame, (int(xmin), int(ymin)), (int(xmax), int(ymax)), color, 2)
-                    cv2.putText(frame, f'{model.names[int(cls)]}: {conf:.2f}', (int(xmin), int(ymin)-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+                     # Initialize Kalman filter for new object
+                    if cls not in kalman_filters:
+                        kalman_filters[cls] = KalmanFilter(dim_x=4, dim_z=2)
+                        kalman_filters[cls].x = np.array([xmin, ymin, 0, 0])
+                        kalman_filters[cls].F = np.array([[1, 0, 1, 0],
+                                                           [0, 1, 0, 1],
+                                                           [0, 0, 1, 0],
+                                                           [0, 0, 0, 1]])
+                        kalman_filters[cls].H = np.array([[1, 0, 0, 0],
+                                                           [0, 1, 0, 0]])
+                        kalman_filters[cls].P *= 10
+                        kalman_filters[cls].R = np.array([[10, 0],
+                                                           [0, 10]])
+                        kalman_filters[cls].Q = Q_discrete_white_noise(dim=4, dt=1, var=0.1)
 
-                    # Update object counts
-                    object_counts[class_names[int(cls)]] += 1
+
+                    # Predict object's next position with Kalman filter
+                    kalman_filters[cls].predict()
+                    
+                    # Update object's position with detection
+                    kalman_filters[cls].update(np.array([[xmin], [ymin]]))
+                    
+                    # Get predicted position
+                    predicted_x, predicted_y = kalman_filters[cls].x[:2].astype(int)
+                    
+                    # Print predicted and updated positions
+                    print(f'{class_names[int(cls)]}: Predicted Position ({predicted_x}, {predicted_y}), Updated Position ({xmin}, {ymin})')
+                    
+                    # Draw bounding box
+                    cv2.rectangle(frame, (predicted_x, predicted_y), (int(xmax), int(ymax)), (255, 0, 0), 2)
+                    cv2.putText(frame, f'{class_names[int(cls)]}: {conf:.2f}', (predicted_x, predicted_y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+        
+        # cv2.imshow('Real-time Object Detection and Tracking', frame)
+
+        color = colors[int(cls)]
+        cv2.rectangle(frame, (int(xmin), int(ymin)), (int(xmax), int(ymax)), color, 2)
+        cv2.putText(frame, f'{model.names[int(cls)]}: {conf:.2f}', (int(xmin), int(ymin)-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+
+        # Update object counts
+        object_counts[class_names[int(cls)]] += 1
 
         # Display object counts
         count_text = ', '.join([f'{name}: {count}' for name, count in object_counts.items()])
@@ -79,7 +119,7 @@ def detect_objects():
             video_writer.release()
             video_writer = None
 
-        cv2.imshow('Real-time Object Detection', frame)    
+        # cv2.imshow('Real-time Object Detection', frame)    
         
         # Calculate FPS
         current_time = time.time()
