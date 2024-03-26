@@ -1,14 +1,14 @@
-#Real-Time Object Detection and Tracking 🐕‍🦺 
+# Real-Time Object Detection and Tracking 🐕‍🦺 
 
-###This Python script performs real-time object detection and tracking using YOLOv5 for object detection. The script uses the OpenCV library for capturing video frames from a webcam and displaying the detection results.
+### This Python script performs real-time object detection and tracking using YOLOv5 for object detection. The script uses the OpenCV library for capturing video frames from a webcam and displaying the detection results.
 
-##Dependencies
+## Dependencies
 Python 3.x
 PyTorch
 OpenCV
 numpy
 
-##Installation
+## Installation
 ```
 Install Python 3.x from python.org
 Install PyTorch using pip install torch torchvision
@@ -17,8 +17,8 @@ Install numpy using pip install numpy
 
 ```
 
-##Usage
-###Run the script.
+## Usage
+### Run the script.
 ```
 python Filename.py
 python3 Filename.py
@@ -26,16 +26,16 @@ python3 Filename.py
 ```
 The webcam feed will be displayed, and objects will be detected and tracked in real-time.
 
-##Features
+## Features
 
 Real-time object detection using YOLOv5.
 Display of bounding boxes and labels for detected objects.
 
-##Configuration
+## Configuration
 window_width and window_height variables can be adjusted to change the size of the display window.
 confidence_threshold variable can be adjusted to change the confidence threshold for object detection.
 
-##References
+## References
 ```
 
 YOLOv5: repository https://github.com/ultralytics/yolov5
