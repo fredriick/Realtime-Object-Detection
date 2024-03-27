@@ -7,7 +7,8 @@ import numpy as np
 from datetime import datetime
 from filterpy.kalman import KalmanFilter
 from filterpy.common import Q_discrete_white_noise
-
+import tkinter as tk
+from tkinter import ttk
 
 # Load YOLOv5
 model = torch.hub.load('ultralytics/yolov5', 'yolov5n', pretrained=True)
@@ -42,6 +43,39 @@ prev_time = 0
 
 # Initialize Kalman filter for each object
 kalman_filters = {}
+
+# Create a GUI window
+root = tk.Tk()
+root.title("Object Detection Settings")
+
+# Detection Threshold
+def update_threshold(value):
+    global confidence_threshold
+    confidence_threshold = float(value) / 100
+
+threshold_label = tk.Label(root, text="Detection Threshold:")
+threshold_label.pack()
+threshold_slider = ttk.Scale(root, from_=0, to=100, orient=tk.HORIZONTAL, command=update_threshold)
+threshold_slider.set(confidence_threshold * 100)
+threshold_slider.pack()
+
+# Object Counts
+count_label = tk.Label(root, text="Object Counts:")
+count_label.pack()
+
+count_text = tk.Text(root, height=5, width=50)
+count_text.pack()
+
+# Function to update GUI with object counts
+def update_counts():
+    count_text.delete("1.0", tk.END)
+    count_text.insert(tk.END, '\n'.join([f'{name}: {count}' for name, count in object_counts.items()]))
+    root.after(1000, update_counts)
+
+# Run the GUI
+root.after(1000, update_counts)
+root.mainloop()
+
 
 # Define a function for real-time object detection
 def detect_objects():
