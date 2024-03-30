@@ -9,6 +9,7 @@ from filterpy.kalman import KalmanFilter
 from filterpy.common import Q_discrete_white_noise
 import tkinter as tk
 from tkinter import ttk
+import argparse
 
 # Load YOLOv5
 model = torch.hub.load('ultralytics/yolov5', 'yolov5n', pretrained=True)
@@ -44,6 +45,11 @@ prev_time = 0
 # Initialize Kalman filter for each object
 kalman_filters = {}
 
+# Parse command-line arguments
+parser = argparse.ArgumentParser(description='Real-time Object Detection and Tracking')
+parser.add_argument('--video', type=str, default='', help='Path to video file (e.g., --video video.mp4)')
+args = parser.parse_args()
+
 # Create a GUI window
 root = tk.Tk()
 root.title("Object Detection Settings")
@@ -78,11 +84,16 @@ root.mainloop()
 
 
 # Define a function for real-time object detection
-def detect_objects():
+def detect_objects(video_path=None):
     global is_recording, video_writer
     global prev_time  # Declare prev_time as global
     
-    cap = cv2.VideoCapture(0)  # Use the webcam
+    # print(f"Opening video file: {video_path}")
+    video_path = args.video
+    cap = cv2.VideoCapture(video_path) if video_path else cv2.VideoCapture(0)  # Use video file if provided, otherwise use webcam
+    # cap = cv2.VideoCapture(0)  # Use the webcam
+    print(f"Opening video file: {video_path}")
+    
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
@@ -124,7 +135,7 @@ def detect_objects():
                     predicted_x, predicted_y = kalman_filters[cls].x[:2].astype(int)
                     
                     # Print predicted and updated positions
-                    print(f'{class_names[int(cls)]}: Predicted Position ({predicted_x}, {predicted_y}), Updated Position ({xmin}, {ymin})')
+                    # print(f'{class_names[int(cls)]}: Predicted Position ({predicted_x}, {predicted_y}), Updated Position ({xmin}, {ymin})')
                     
                     # Draw bounding box
                     cv2.rectangle(frame, (predicted_x, predicted_y), (int(xmax), int(ymax)), (255, 0, 0), 2)
