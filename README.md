@@ -24,6 +24,13 @@ python Filename.py
 python3 Filename.py
 
 ```
+
+### Run the script with command arguments.
+```
+python Filename.py --video path_to_video
+
+```
+
 The webcam feed will be displayed, and objects will be detected and tracked in real-time.
 
 ## Features
