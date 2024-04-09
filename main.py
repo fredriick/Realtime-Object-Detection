@@ -19,6 +19,13 @@ model = torch.hub.load('ultralytics/yolov5', 'yolov5n', pretrained=True)
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 model.to(device).eval()
 
+print("Before CUDA check")
+if torch.cuda.is_available():
+    print("CUDA is available. Using GPU for inference.")
+else:
+    print("CUDA is not available. Using CPU for inference.")
+print("After CUDA check")
+
 # Define the window size
 window_width = 900
 window_height = 700
