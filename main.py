@@ -150,7 +150,7 @@ def detect_objects(video_path=None):
         
         # cv2.imshow('Real-time Object Detection and Tracking', frame)
 
-        color = colors[int(cls)]
+                color = colors[int(cls)]
         cv2.rectangle(frame, (int(xmin), int(ymin)), (int(xmax), int(ymax)), color, 2)
         cv2.putText(frame, f'{model.names[int(cls)]}: {conf:.2f}', (int(xmin), int(ymin)-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
