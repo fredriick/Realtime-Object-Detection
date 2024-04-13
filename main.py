@@ -10,6 +10,8 @@ from filterpy.common import Q_discrete_white_noise
 import tkinter as tk
 from tkinter import ttk
 import argparse
+from queue import Queue
+from threading import Thread
 
 # Load YOLOv5
 model = torch.hub.load('ultralytics/yolov5', 'yolov5n', pretrained=True)
@@ -89,6 +91,11 @@ def update_counts():
 root.after(1000, update_counts)
 root.mainloop()
 
+# Function for parallel processing of video frames
+def process_frame(frame, detections_queue):
+    print(f"Processing frame {frame}")
+    results = model(frame, size=640)
+    detections_queue.put(results.pred)
 
 # Define a function for real-time object detection
 def detect_objects(video_path=None):
@@ -101,6 +108,8 @@ def detect_objects(video_path=None):
     # cap = cv2.VideoCapture(0)  # Use the webcam
     print(f"Opening video file: {video_path}")
     
+    detections_queue = Queue()
+
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
@@ -108,7 +117,15 @@ def detect_objects(video_path=None):
         
         # Resize the frame
         frame = cv2.resize(frame, (window_width, window_height))
+
+        # Process each frame in a separate thread
+        frame_thread = Thread(target=process_frame, args=(frame.copy(), detections_queue))
+        frame_thread.start()
+        frame_thread.join()
         
+        # Get results from the queue
+        results = detections_queue.get()
+
         # Perform inference
         results = model(frame, size=640)
         for _, pred in enumerate(results.pred):
