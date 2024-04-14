@@ -57,6 +57,7 @@ kalman_filters = {}
 # Parse command-line arguments
 parser = argparse.ArgumentParser(description='Real-time Object Detection and Tracking')
 parser.add_argument('--video', type=str, default='', help='Path to video file (e.g., --video video.mp4)')
+parser.add_argument('--parallel', action='store_true', help='Enable parallel processing for video frames')
 args = parser.parse_args()
 
 # Create a GUI window
@@ -108,6 +109,10 @@ def detect_objects(video_path=None):
     # cap = cv2.VideoCapture(0)  # Use the webcam
     print(f"Opening video file: {video_path}")
     
+    # if args.parallel:
+    #     detections_queue = Queue()
+    # else:
+    #     detections_queue = None
     detections_queue = Queue()
 
     while cap.isOpened():
@@ -118,14 +123,16 @@ def detect_objects(video_path=None):
         # Resize the frame
         frame = cv2.resize(frame, (window_width, window_height))
 
-        # Process each frame in a separate thread
-        frame_thread = Thread(target=process_frame, args=(frame.copy(), detections_queue))
-        frame_thread.start()
-        frame_thread.join()
+        if args.parallel:
+            # Process each frame in a separate thread
+            frame_thread = Thread(target=process_frame, args=(frame.copy(), detections_queue))
+            frame_thread.start()
+            frame_thread.join()
         
         # Get results from the queue
-        results = detections_queue.get()
-
+        # results = detections_queue.get()
+        results = detections_queue.get() if args.parallel else model(frame, size=640)
+        
         # Perform inference
         results = model(frame, size=640)
         for _, pred in enumerate(results.pred):
@@ -168,11 +175,11 @@ def detect_objects(video_path=None):
         # cv2.imshow('Real-time Object Detection and Tracking', frame)
 
                 color = colors[int(cls)]
-        cv2.rectangle(frame, (int(xmin), int(ymin)), (int(xmax), int(ymax)), color, 2)
-        cv2.putText(frame, f'{model.names[int(cls)]}: {conf:.2f}', (int(xmin), int(ymin)-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+                cv2.rectangle(frame, (int(xmin), int(ymin)), (int(xmax), int(ymax)), color, 2)
+                cv2.putText(frame, f'{model.names[int(cls)]}: {conf:.2f}', (int(xmin), int(ymin)-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
         # Update object counts
-        object_counts[class_names[int(cls)]] += 1
+            object_counts[class_names[int(cls)]] += 1
 
         # Display object counts
         count_text = ', '.join([f'{name}: {count}' for name, count in object_counts.items()])
@@ -210,4 +217,5 @@ def detect_objects(video_path=None):
     cv2.destroyAllWindows()
 
 # Run real-time object detection
+# if __name__ == '__main__':
 detect_objects()
