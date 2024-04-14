@@ -31,6 +31,13 @@ python Filename.py --video path_to_video
 
 ```
 
+To use parallel processing
+
+```
+python Filename.py --video path_to_video --parallel
+
+```
+
 The webcam feed will be displayed, and objects will be detected and tracked in real-time.
 
 ## Features
@@ -41,6 +48,8 @@ Display of bounding boxes and labels for detected objects.
 
 Object Tracking: Tracks detected objects over consecutive frames using Kalman filters to predict and update their positions.
 
+Parallel processing
+
 ## Configuration
 window_width and window_height variables can be adjusted to change the size of the display window.
 confidence_threshold variable can be adjusted to change the confidence threshold for object detection.
@@ -50,5 +59,6 @@ confidence_threshold variable can be adjusted to change the confidence threshold
 
 YOLOv5: repository https://github.com/ultralytics/yolov5
 KalmanFilter: https://filterpy.readthedocs.io/en/latest/kalman/KalmanFilter.html
+https://docs.python.org/3/library/multiprocessing.html
 
 ```
