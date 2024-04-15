@@ -92,6 +92,10 @@ def update_counts():
 root.after(1000, update_counts)
 root.mainloop()
 
+def batch_process_frames(frames):
+    results = model(frames, size=640)
+    return results.pred
+
 # Function for parallel processing of video frames
 def process_frame(frame, detections_queue):
     print(f"Processing frame {frame}")
@@ -115,6 +119,8 @@ def detect_objects(video_path=None):
     #     detections_queue = None
     detections_queue = Queue()
 
+    batch_size = 3  # Define batch size
+    
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
@@ -122,7 +128,17 @@ def detect_objects(video_path=None):
         
         # Resize the frame
         frame = cv2.resize(frame, (window_width, window_height))
+        
+        # Batch frames for processing
+        frames = [frame.copy() for _ in range(batch_size)]  # Batch size of 8
+        start_time = time.time()  # Record start time of batch processing
+        results = batch_process_frames(frames)
+        end_time = time.time()  # Record end time of batch processing
 
+        # Print batch size and processing time
+        print(f"Batch Size: {batch_size}, Processing Time: {end_time - start_time:.2f} seconds")
+
+        
         if args.parallel:
             # Process each frame in a separate thread
             frame_thread = Thread(target=process_frame, args=(frame.copy(), detections_queue))
