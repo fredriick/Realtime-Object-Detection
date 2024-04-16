@@ -58,6 +58,7 @@ kalman_filters = {}
 parser = argparse.ArgumentParser(description='Real-time Object Detection and Tracking')
 parser.add_argument('--video', type=str, default='', help='Path to video file (e.g., --video video.mp4)')
 parser.add_argument('--parallel', action='store_true', help='Enable parallel processing for video frames')
+parser.add_argument('--batch_size', type=int, default=1, help='Batch size for processing frames')
 args = parser.parse_args()
 
 # Create a GUI window
@@ -103,7 +104,7 @@ def process_frame(frame, detections_queue):
     detections_queue.put(results.pred)
 
 # Define a function for real-time object detection
-def detect_objects(video_path=None):
+def detect_objects(video_path=None, batch_size=1):
     global is_recording, video_writer
     global prev_time  # Declare prev_time as global
     
@@ -119,7 +120,9 @@ def detect_objects(video_path=None):
     #     detections_queue = None
     detections_queue = Queue()
 
-    batch_size = 3  # Define batch size
+    batch_size = args.batch_size
+
+    # batch_size = 3  # Define batch size
     
     while cap.isOpened():
         ret, frame = cap.read()
