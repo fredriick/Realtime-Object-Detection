@@ -120,10 +120,10 @@ def detect_objects(video_path=None, batch_size=1):
     #     detections_queue = None
     detections_queue = Queue()
 
+    # batch_size = 3  # Define batch size
+
     batch_size = args.batch_size
 
-    # batch_size = 3  # Define batch size
-    
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
