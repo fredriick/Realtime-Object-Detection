@@ -26,16 +26,21 @@ python3 Filename.py
 ```
 
 ### Run the script with command arguments.
+
 ```
 python Filename.py --video path_to_video
-
 ```
 
 To use parallel processing
 
 ```
 python Filename.py --video path_to_video --parallel
+```
 
+To use Batch processing
+
+```
+python Filename.py --batch_size
 ```
 
 The webcam feed will be displayed, and objects will be detected and tracked in real-time.
