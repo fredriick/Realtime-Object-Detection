@@ -198,7 +198,7 @@ def detect_objects(video_path=None, batch_size=1):
                 cv2.putText(frame, f'{model.names[int(cls)]}: {conf:.2f}', (int(xmin), int(ymin)-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
         # Update object counts
-            object_counts[class_names[int(cls)]] += 1
+        object_counts[class_names[int(cls)]] += 1
 
         # Display object counts
         count_text = ', '.join([f'{name}: {count}' for name, count in object_counts.items()])
