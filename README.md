@@ -34,13 +34,13 @@ python Filename.py --video path_to_video
 To use parallel processing
 
 ```
-python Filename.py --video path_to_video --parallel
+python Filename.py --parallel
 ```
 
 To use Batch processing
 
 ```
-python Filename.py --batch_size
+python Filename.py --batch_size <value>
 ```
 
 The webcam feed will be displayed, and objects will be detected and tracked in real-time.
